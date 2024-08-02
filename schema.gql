@@ -1,0 +1,28 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: Float!
+  email: String!
+  name: String!
+}
+
+type UserResponse {
+  data: User
+  errors: String
+}
+
+type Query {
+  getAllUsers: [User!]!
+}
+
+type Mutation {
+  register(request: RegisterRequest!): UserResponse!
+}
+
+input RegisterRequest {
+  email: String!
+  name: String!
+  password: String!
+}
