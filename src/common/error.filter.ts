@@ -1,8 +1,9 @@
 import {
+    BadRequestException,
     Catch,
     ExceptionFilter,
     HttpException,
-    HttpStatus,
+    InternalServerErrorException,
 } from '@nestjs/common';
 import { ZodError } from 'zod';
 
@@ -12,16 +13,15 @@ export class ErrorFilter implements ExceptionFilter {
         if (exception instanceof HttpException) {
             throw new HttpException(exception.message, exception.getStatus());
         } else if (exception instanceof ZodError) {
-            throw new HttpException(
+            throw new BadRequestException(
                 exception.errors
                     .map((value) => {
                         return value.message;
                     })
                     .join(', '),
-                HttpStatus.BAD_REQUEST,
             );
         } else {
-            throw new HttpException(exception.message, 500);
+            throw new InternalServerErrorException(exception.message);
         }
     }
 }
