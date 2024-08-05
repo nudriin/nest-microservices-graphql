@@ -7,7 +7,16 @@ export class RegisterRequest {
 
     @Field()
     name: string;
-    
+
+    @Field()
+    password: string;
+}
+
+@InputType()
+export class LoginRequest {
+    @Field()
+    email: string;
+
     @Field()
     password: string;
 }

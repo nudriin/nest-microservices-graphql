@@ -9,8 +9,13 @@ type User {
 }
 
 type UserResponse {
-  data: User
   errors: String
+  user: User
+}
+
+type LoginResponse {
+  errors: String
+  token: String
 }
 
 type Query {
@@ -19,10 +24,16 @@ type Query {
 
 type Mutation {
   register(request: RegisterRequest!): UserResponse!
+  login(request: LoginRequest!): LoginResponse!
 }
 
 input RegisterRequest {
   email: String!
   name: String!
+  password: String!
+}
+
+input LoginRequest {
+  email: String!
   password: String!
 }

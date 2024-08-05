@@ -27,29 +27,56 @@ describe('AppController', () => {
         it('should success register user', async () => {
             const queryData = {
                 query: `mutation {
-                  register(request: {
-                    name: "test",
-                    email: "test@test.com",
-                    password: "12345678"
-                  }) {
-                    data {
-                      id
-                      email
-                      name
-                    } 
-                  }
-            }`,
+                    register(request: {
+                        name: "test",
+                        email: "test@test.com",
+                        password: "12345678"
+                    }) {
+                        user {
+                            id
+                            email
+                            name
+                        } 
+                    }
+                }`,
             };
             const response = await request(app.getHttpServer())
                 .post(gql)
                 .send(queryData);
             console.log(response.body.data.register);
 
-            expect(response.body.data.register.data.name).toBe('test');
-            expect(response.body.data.register.data.email).toBe(
+            expect(response.body.data.register.user.name).toBe('test');
+            expect(response.body.data.register.user.email).toBe(
                 'test@test.com',
             );
-            expect(response.body.data.register.data.id).toBeDefined();
+            expect(response.body.data.register.user.id).toBeDefined();
+        });
+    });
+
+    describe('Mutation login', () => {
+        beforeEach(async () => {
+            await testService.deleteUser();
+            await testService.createUser();
+        });
+        it('should success login user', async () => {
+            const queryData = {
+                query: `mutation {
+                    login(request: {
+                        email: "test@test.com",
+                        password: "12345678"
+                    }) {
+                        token 
+                    }
+                }`,
+            };
+
+            const response = await request(app.getHttpServer())
+                .post(gql)
+                .send(queryData);
+
+            console.log(response.body.data.login);
+
+            expect(response.body.data.login.token).toBeDefined();
         });
     });
 });
