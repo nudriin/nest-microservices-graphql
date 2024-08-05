@@ -21,8 +21,7 @@ import { ErrorFilter } from './error.filter';
             context: ({ req, res }) => ({ req, res }),
             formatError: (err) => ({
                 message: err.message,
-                timestamp: err.extensions.timestamp,
-                status: err.extensions.status,
+                code: err.extensions.code,
             }),
         }),
         ConfigModule.forRoot({

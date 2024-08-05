@@ -3,13 +3,17 @@ import { UserService } from './user.service';
 import { LoginResponse, UserResponse } from '../types/user.type';
 import { LoginRequest, RegisterRequest } from '../dto/user.dto';
 import { User } from '../model/user.model';
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../common/auth.guard';
 import { Auth } from '../common/auth.decorator';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Resolver('User')
 export class UserResolver {
-    constructor(private userService: UserService) {}
+    constructor(
+        private userService: UserService,
+        @Inject('USERS_SERVICE') private rmqClient: ClientProxy, // inject rabbitmq client
+    ) {}
 
     @Mutation(() => UserResponse)
     async register(
@@ -17,6 +21,8 @@ export class UserResolver {
     ): Promise<UserResponse> {
         const user = await this.userService.register(request);
 
+        // * mengirim event ke rabbitmq
+        this.rmqClient.emit('user_created', user);
         return user;
     }
 

@@ -1,10 +1,14 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+    CanActivate,
+    ExecutionContext,
+    Injectable,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 // import { Observable } from 'rxjs';
 import { PrismaService } from './prisma.service';
-import { ValidationException } from './validation.exception';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -20,7 +24,7 @@ export class AuthGuard implements CanActivate {
         // mengambil authorization header yang dikirim client
         const authorization = req.headers.authorization as string;
         if (!authorization) {
-            throw new ValidationException('Unauthorized', 401);
+            throw new UnauthorizedException('Unauthorized');
         }
         try {
             const token = authorization.split(' ')[1];
@@ -36,12 +40,12 @@ export class AuthGuard implements CanActivate {
             });
 
             if (!user) {
-                throw new ValidationException('Unauthorized', 401);
+                throw new UnauthorizedException('Unauthorized');
             } else {
                 req.user = user;
             }
         } catch (error) {
-            throw new ValidationException('Unauthorized', 401);
+            throw new UnauthorizedException('Unauthorized');
         }
 
         return true;
