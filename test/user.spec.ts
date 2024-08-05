@@ -26,7 +26,8 @@ describe('AppController', () => {
         });
         it('should success register user', async () => {
             const queryData = {
-                query: `mutation {
+                query: `#graphql
+                mutation {
                     register(request: {
                         name: "test",
                         email: "test@test.com",
@@ -51,6 +52,33 @@ describe('AppController', () => {
             );
             expect(response.body.data.register.user.id).toBeDefined();
         });
+
+        it('should failed register user if user is exist', async () => {
+            await testService.createUser();
+            const queryData = {
+                query: `#graphql
+                mutation {
+                    register(request: {
+                        name: "test",
+                        email: "test@test.com",
+                        password: "12345678"
+                    }) {
+                        user {
+                            id
+                            email
+                            name
+                        } 
+                    }
+                }`,
+            };
+            const response = await request(app.getHttpServer())
+                .post(gql)
+                .send(queryData);
+            console.log(response.body.errors);
+
+            expect(response.body.errors).toBeDefined();
+            expect(response.body.errors[0].message).toBe('Email is exist');
+        });
     });
 
     describe('Mutation login', () => {
@@ -60,12 +88,13 @@ describe('AppController', () => {
         });
         it('should success login user', async () => {
             const queryData = {
-                query: `mutation {
+                query: `#graphql
+                mutation {
                     login(request: {
                         email: "test@test.com",
                         password: "12345678"
                     }) {
-                        token 
+                        token  
                     }
                 }`,
             };
@@ -78,6 +107,31 @@ describe('AppController', () => {
 
             expect(response.body.data.login.token).toBeDefined();
         });
+
+        it('should failed login user if username or password is wrong', async () => {
+            const queryData = {
+                query: `#graphql
+                mutation {
+                    login(request: {
+                        email: "test@test.com",
+                        password: "1234567"
+                    }) {
+                        token  
+                    }
+                }`,
+            };
+
+            const response = await request(app.getHttpServer())
+                .post(gql)
+                .send(queryData);
+
+            console.log(response.body.errors);
+
+            expect(response.body.errors).toBeDefined();
+            expect(response.body.errors[0].message).toBe(
+                'Username or password is wrong',
+            );
+        });
     });
 
     describe('Query currentUser', () => {
@@ -87,7 +141,8 @@ describe('AppController', () => {
         });
         it('should success get current user', async () => {
             const queryLogin = {
-                query: `mutation {
+                query: `#graphql 
+                    mutation {
                     login(request: {
                         email: "test@test.com",
                         password: "12345678"
@@ -104,12 +159,13 @@ describe('AppController', () => {
             const token = response.body.data.login.token;
 
             const queryData = {
-                query: `query {
-                    getCurrent {
-                        user {
-                            id
-                            email
-                            name
+                query: `#graphql 
+                    query {
+                        getCurrent {
+                            user {
+                                id
+                                email
+                                name
                         } 
                     }
                 }`,
@@ -129,6 +185,31 @@ describe('AppController', () => {
             );
             expect(response.body.data.getCurrent.user.id).toBeDefined();
             expect(response.body.errors).toBeUndefined();
+        });
+
+        it('should failed get current user if token is wrong', async () => {
+            const queryData = {
+                query: `#graphql 
+                    query {
+                        getCurrent {
+                            user {
+                                id
+                                email
+                                name
+                        } 
+                    }
+                }`,
+            };
+
+            const response = await request(app.getHttpServer())
+                .post(gql)
+                .set({
+                    Authorization: `Bearer wrong`,
+                })
+                .send(queryData);
+
+            console.log(response.body.errors);
+            expect(response.body.errors[0].message).toBe('Unauthorized');
         });
     });
 });
