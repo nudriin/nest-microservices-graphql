@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { ValidationService } from '../common/validation.service';
 import { LoginRequest, RegisterRequest } from '../dto/user.dto';
@@ -8,6 +8,7 @@ import { LoginResponse, UserResponse } from '../types/user.type';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../model/user.model';
+import { ValidationException } from '../common/validation.exception';
 
 @Injectable()
 export class UserService {
@@ -32,7 +33,7 @@ export class UserService {
         });
 
         if (totalUser != 0) {
-            throw new BadRequestException('Email is exist');
+            throw new ValidationException('Email is exist', 400);
         }
 
         validRequest.password = await bcrypt.hash(validRequest.password, 10);
@@ -65,7 +66,7 @@ export class UserService {
         });
 
         if (!user) {
-            throw new BadRequestException('Username or password is wrong');
+            throw new ValidationException('Username or password is wrong', 400);
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -74,7 +75,7 @@ export class UserService {
         );
 
         if (!isPasswordValid) {
-            throw new BadRequestException('Username or password is wrong');
+            throw new ValidationException('Username or password is wrong', 400);
         }
 
         const token = this.jwtService.sign(
@@ -112,7 +113,7 @@ export class UserService {
         });
 
         if (!findUser) {
-            throw new BadRequestException('User not found');
+            throw new ValidationException('User not found', 400);
         }
 
         return {
