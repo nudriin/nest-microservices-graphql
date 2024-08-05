@@ -19,6 +19,7 @@ type LoginResponse {
 }
 
 type Query {
+  getCurrent: UserResponse!
   getAllUsers: [User!]!
 }
 

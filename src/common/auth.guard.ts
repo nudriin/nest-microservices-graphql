@@ -1,8 +1,8 @@
 import {
     CanActivate,
     ExecutionContext,
-    HttpException,
     Injectable,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
         // mengambil authorization header yang dikirim client
         const authorization = req.headers.authorization as string;
         if (!authorization) {
-            throw new HttpException('Unauthorized', 401);
+            throw new UnauthorizedException('Unauthorized');
         }
         try {
             const token = authorization.split(' ')[1];
@@ -40,12 +40,12 @@ export class AuthGuard implements CanActivate {
             });
 
             if (!user) {
-                throw new HttpException('Unauthorized', 401);
+                throw new UnauthorizedException('Unauthorized');
             } else {
                 req.user = user;
             }
         } catch (error) {
-            throw new HttpException('Unauthorized', 401);
+            throw new UnauthorizedException('Unauthorized');
         }
 
         return true;

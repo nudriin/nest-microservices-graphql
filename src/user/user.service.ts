@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginResponse, UserResponse } from '../types/user.type';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { User } from '../model/user.model';
 
 @Injectable()
 export class UserService {
@@ -90,6 +91,32 @@ export class UserService {
 
         return {
             token: token,
+        };
+    }
+
+    async getCurrent(user: User): Promise<UserResponse> {
+        const validRequest: User = this.validationService.validate(
+            UserValidation.USER,
+            user,
+        ) as User;
+
+        const findUser = await this.prismaService.user.findUnique({
+            where: {
+                id: validRequest.id,
+            },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+            },
+        });
+
+        if (!findUser) {
+            throw new BadRequestException('User not found');
+        }
+
+        return {
+            user: findUser,
         };
     }
 }

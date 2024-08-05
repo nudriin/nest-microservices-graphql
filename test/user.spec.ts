@@ -79,4 +79,56 @@ describe('AppController', () => {
             expect(response.body.data.login.token).toBeDefined();
         });
     });
+
+    describe('Query currentUser', () => {
+        beforeEach(async () => {
+            await testService.deleteUser();
+            await testService.createUser();
+        });
+        it('should success get current user', async () => {
+            const queryLogin = {
+                query: `mutation {
+                    login(request: {
+                        email: "test@test.com",
+                        password: "12345678"
+                    }) {
+                        token 
+                    }
+                }`,
+            };
+
+            let response = await request(app.getHttpServer())
+                .post(gql)
+                .send(queryLogin);
+
+            const token = response.body.data.login.token;
+
+            const queryData = {
+                query: `query {
+                    getCurrent {
+                        user {
+                            id
+                            email
+                            name
+                        } 
+                    }
+                }`,
+            };
+
+            response = await request(app.getHttpServer())
+                .post(gql)
+                .set({
+                    Authorization: `Bearer ${token}`,
+                })
+                .send(queryData);
+
+            console.log(response.body.data.getCurrent.user);
+            expect(response.body.data.getCurrent.user.name).toBe('test');
+            expect(response.body.data.getCurrent.user.email).toBe(
+                'test@test.com',
+            );
+            expect(response.body.data.getCurrent.user.id).toBeDefined();
+            expect(response.body.errors).toBeUndefined();
+        });
+    });
 });
