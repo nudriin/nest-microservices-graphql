@@ -23,6 +23,7 @@ export class UserResolver {
 
         // * mengirim event ke rabbitmq
         this.rmqClient.emit('user_created', user);
+        this.rmqClient.close();
         return user;
     }
 
